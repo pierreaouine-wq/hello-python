@@ -20,15 +20,16 @@ def mesh_1d(L,n_elem):
     return nodes,connect
 
 L = 0.33        # longueur vibrante [m]
-n_elem = 11     # nombre d'éléments
+x_bow=0.03      #
+n_elem = 11*5    # nombre d'éléments
 T=50
-rho=3,1*10**(-3)
+rho=3.1*10**(-3)
 S=1
 h=L/n_elem
-nodes, mesh = mesh_1d(L,n_elem)
-print(nodes)
-print(mesh)
-n_nodes , connect = mesh_1d(L,n_elem)
+nodes, connect = mesh_1d(L,n_elem)
+#print(nodes)
+#print(mesh)
+n_nodes=len(nodes)
 
 def string_elem_stiffness(h:float, T):
     """
@@ -101,30 +102,35 @@ def tronque(A):
     """
     return A[1:-1,1:-1]
 
-F = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+F = np.zeros(n_nodes - 2)
+F[int(x_bow/h)] = 1
 
-solu_u = np.pad(
-    np.linalg.solve(
-        tronque(assemblage_K(n_elem + 1, mesh, T)),
-        F
-    ),
-    (1, 1),
-    mode='constant',
-    constant_values=0
-)
+solu_u = np.pad(np.linalg.solve(
+        tronque(assemblage_K(n_elem + 1, connect, T)),F),(1, 1),mode='constant',constant_values=0)
 
 #plt.plot(nodes, solu_u, marker='o')
-#plt.xlabel("Position x (m)")
-#plt.ylabel("Déplacement u")
-#plt.grid()
-#plt.show()
+
 
 
 K=assemblage_K(n_nodes,connect,T)
 M=assemblage_M(n_nodes,connect,rho,S,h)
 
-print(linalg.eigh(K,M))
-w2 ,v2 =linalg.eigh(K,M)
+print(linalg.eigh(tronque(K),tronque(M)))
+val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M))
 
-for k in range (len(w2)):
-    print(w2[k]**(1/2))
+
+print(val_p2**(1/2))
+
+def ajout0(V:list):
+    """
+    Retourne le vecteur V avec 2 dim en plus, un 0 avant et à la fin
+    """
+    return np.pad(V,(1, 1),mode='constant',constant_values=0)
+
+for i in range(5):# a modifier
+    plt.plot(nodes,ajout0(vect_p[:,i]),label=f"vp={i}")
+    plt.xlabel("Position x (m)")
+    plt.ylabel("Déplacement u")
+    plt.grid()
+    plt.legend()
+plt.show()
