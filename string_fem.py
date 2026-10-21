@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.linalg as linalg
+import scipy.integrate
 
 
 def mesh_1d(L,n_elem):
@@ -136,7 +137,6 @@ for i in range(5):# a modifier
 #plt.show()
 
 
-
 #T_var=np.arange(10,100,5)
 #for i in range(len(T_var)):
     #K=assemblage_K(n_nodes,connect,T_var[i])
@@ -147,4 +147,6 @@ for i in range(5):# a modifier
     #plt.grid()
     #plt.legend()
    
-plt.show()
+#plt.show()
+
+
