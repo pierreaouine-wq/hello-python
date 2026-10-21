@@ -133,4 +133,18 @@ for i in range(5):# a modifier
     plt.ylabel("Déplacement u")
     plt.grid()
     plt.legend()
+#plt.show()
+
+
+
+#T_var=np.arange(10,100,5)
+#for i in range(len(T_var)):
+    #K=assemblage_K(n_nodes,connect,T_var[i])
+    #val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M))
+    #plt.plot(T,val_p2)
+    #plt.xlabel("T")
+    #plt.ylabel("f")
+    #plt.grid()
+    #plt.legend()
+   
 plt.show()
