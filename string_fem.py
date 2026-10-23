@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.linalg as linalg
 import scipy.integrate
+import scipy.linalg as linalg
+from scipy.integrate import solve_ivp
 
 
 def mesh_1d(L,n_elem):
@@ -22,7 +24,7 @@ def mesh_1d(L,n_elem):
 
 L = 0.33        # longueur vibrante [m]
 x_bow=0.03      #
-n_elem = 11*5    # nombre d'éléments
+n_elem = 330   # nombre d'éléments
 T=50
 rho=3.1*10**(-3)
 S=1
@@ -115,6 +117,7 @@ solu_u = np.pad(np.linalg.solve(
 
 K=assemblage_K(n_nodes,connect,T)
 M=assemblage_M(n_nodes,connect,rho,S,h)
+M_inv=np.linalg.inv(M)
 
 print(linalg.eigh(tronque(K),tronque(M)))
 val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M))
@@ -128,7 +131,7 @@ def ajout0(V:list):
     """
     return np.pad(V,(1, 1),mode='constant',constant_values=0)
 
-for i in range(5):# a modifier
+#for i in range(5):# a modifier
     plt.plot(nodes,ajout0(vect_p[:,i]),label=f"vp={i}")
     plt.xlabel("Position x (m)")
     plt.ylabel("Déplacement u")
@@ -150,3 +153,47 @@ for i in range(5):# a modifier
 #plt.show()
 
 
+
+
+
+
+t0 = 0
+t1 = 0.2
+t = np.linspace(t0, t1, 110)
+
+u0 = solu_u
+v0 = n_nodes * [0]
+
+# Élimination des degrés de liberté bloqués aux extrémités
+K_red = tronque(K)
+M_red = tronque(M)
+
+Y0 = np.concatenate([u0[1:-1], v0[1:-1]])
+
+def rhs(t, Y):
+    n = len(Y) // 2
+    y1, y2 = Y[:n], Y[n:]
+    return np.concatenate([y2, linalg.solve(M_red, -K_red @ y1)])
+
+sol = solve_ivp(rhs, (t0, t1), Y0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
+
+# Reconstruction des déplacements de tous les nœuds
+sol_U = np.vstack([
+    np.zeros((1, len(sol.t))),
+    sol.y[:n_nodes-2, :],
+    np.zeros((1, len(sol.t)))
+])
+
+sol_V = sol.y[n_nodes-2:, :]
+
+# Tracé de la corde à plusieurs instants
+for k in [0,1,2,3,4,5,6,7,8,9,10]:
+    plt.plot(nodes, sol_U[:, k*10], label=f"t = {sol.t[k*10]:.3f} s")
+
+
+plt.xlabel("Position x (m)")
+plt.ylabel("Déplacement u(x,t) (m)")
+plt.title("Déformation de la corde à différents instants")
+plt.legend()
+plt.grid()
+plt.show()
