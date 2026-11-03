@@ -108,6 +108,7 @@ def tronque(A):
 F = np.zeros(n_nodes - 2)
 F[int(x_bow/h)] = 1
 
+
 solu_u = np.pad(np.linalg.solve(
         tronque(assemblage_K(n_elem + 1, connect, T)),F),(1, 1),mode='constant',constant_values=0)
 
@@ -119,11 +120,13 @@ K=assemblage_K(n_nodes,connect,T)
 M=assemblage_M(n_nodes,connect,rho,S,h)
 M_inv=np.linalg.inv(M)
 
-print(linalg.eigh(tronque(K),tronque(M)))
-val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M))
+# Ici on récupère les fréquences propres wn(vals propres) et les modes phi_n (vecteurs propres)
+val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M)) 
+
+print("La taille de vect_p/phi:", np.shape(vect_p),"(n_nodes=)",n_nodes)
+#print(val_p2**(1/2))
 
 
-print(val_p2**(1/2))
 
 def ajout0(V:list):
     """
@@ -169,7 +172,7 @@ K_red = tronque(K)
 M_red = tronque(M)
 
 Y0 = np.concatenate([u0[1:-1], v0[1:-1]])
-
+"""
 def rhs(t, Y):
     n = len(Y) // 2
     y1, y2 = Y[:n], Y[n:]
@@ -197,3 +200,46 @@ plt.title("Déformation de la corde à différents instants")
 plt.legend()
 plt.grid()
 plt.show()
+"""
+
+
+
+##################### AVEC LA BASE MODALE
+
+omega=np.diag(val_p2**0.5)
+omega2=np.diag(val_p2) # matrice diag des carrés des fréquences propres au carré
+phi=vect_p # matrice dont les colonnes sont les modes propres (vecteurs propres)
+
+q0= np.transpose(phi)@M_red@u0[1:-1]
+p0=np.zeros(np.shape(q0))
+Z0=np.concatenate([q0,p0]) 
+
+
+def rhs_modal(t,Y,xi=0):
+    n = len(Y)
+    q = Y[:n]
+    p = Y[n:]
+    return np.concatenate([p, -2*xi*omega*p -omega2@q])
+
+
+sol = solve_ivp(rhs_modal, (t0, t1), Z0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
+
+sol_q= sol.y[:n_nodes,:]
+sol_Umoda= phi@sol_q
+
+
+# Tracé de la corde à plusieurs instants
+for k in [0,1,2,3,4,5,6,7,8,9,10]:
+    plt.plot(nodes, sol_Umoda[:, k*10], label=f"t = {sol.t[k*10]:.3f} s")
+
+
+plt.xlabel("Position x (m)")
+plt.ylabel("Déplacement u(x,t) (m)")
+plt.title("Déformation de la corde à différents instants")
+plt.legend()
+plt.grid()
+plt.show()
+
+
+#son : force transmise au chevalet T u'(0) ~ T u(noeud 1) - u(noeud 0) / h
+#F_bridge= T*(phi_full[ndof_per_node] @ res_mod.y[:N_MODES] ) / (L/n_elem)
