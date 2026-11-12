@@ -167,10 +167,10 @@ def ajout0matrice(M):
 
 
 
-
+fs=44100
 t0 = 0
-t1 = 0.2
-t = np.linspace(t0, t1, 300)
+t1 = 4
+t = np.linspace(t0, t1, fs)
 
 u0 = solu_u
 v0 = n_nodes * [0]
@@ -227,7 +227,7 @@ Z0=np.concatenate([q0,p0])
 
 
 
-def rhs_modal(t,Y,xi=0):
+def rhs_modal(t,Y,xi=0.001):
     """
     Fonction qui retourne le vecteur dérivé de Y=[q,p] pour l'intégration temporelle
     """
@@ -266,7 +266,7 @@ plt.show()
 
 ### Tracé du déplacement en un noeud en fonction du temps
 
-plt.plot(sol.t,sol_Umoda[:,int(x_bow/h)])
+plt.plot(sol.t,sol_Umoda[int(x_bow/h),:])
 plt.xlabel("Temps t (s)")
 plt.ylabel("Déplacement u(t) (m)")
 plt.title("Déplacement en un noeud en fonction du temps")
@@ -274,7 +274,20 @@ plt.grid()
 plt.show()
 
 
-###
+### Tracé de la Fchev en fonction du temps
+F_chev=(sol_Umoda[1,:]-sol_Umoda[0,:])/h
+plt.plot(sol.t, F_chev)
+plt.xlabel("Temps t (s)")
+plt.ylabel("Force chevalet (N)")
+plt.title("Force chevalet en fonction du temps")
+plt.grid()
+plt.show()
 
-#son : force transmise au chevalet T u'(0) ~ T u(noeud 1) - u(noeud 0) / h
-#F_bridge= T*(phi_full[ndof_per_node] @ res_mod.y[:N_MODES] ) / (L/n_elem)
+
+
+##### Création du son
+
+signal=(F_chev/np.max(np.abs(F_chev))*0.9*32767).astype(np.int16)
+
+fichier_audio=scipy.io.wavfile.write("pincement.wav", fs, signal)
+
