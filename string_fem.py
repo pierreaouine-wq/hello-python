@@ -30,15 +30,14 @@ rho=3.1*10**(-3)
 S=1
 h=L/n_elem
 nodes, connect = mesh_1d(L,n_elem)
-#print(nodes)
-#print(mesh)
 n_nodes=len(nodes)
+
+
 
 def string_elem_stiffness(h:float, T):
     """
     h : longueur
     T : tension
-
     """
     return T/h*np.array([[1,-1],[-1,1]])
 
@@ -49,7 +48,6 @@ def string_element_mass(rho,S,h):
     rho : masse voluumique
     h:longueur
     S : surface
-
     """
     return rho*S*h/6*np.array([[2,1],[1,2]])
 
@@ -73,6 +71,8 @@ def assemblage_K(n_nodes,connect,T):
             for b in range(len(dofs)):
                 K[dofs[a], dofs[b]] += Ke[a, b]
     return K
+
+
 
 def assemblage_M(n_nodes,connect,rho,S,h):
     """
@@ -134,6 +134,14 @@ def ajout0(V:list):
     """
     return np.pad(V,(1, 1),mode='constant',constant_values=0)
 
+
+def ajout0matrice(M):
+    """
+    Retourne la matrice M avec 2 lignes et 2 colonnes en plus, des 0 sur les bords
+    """
+    return np.pad(M,(1, 1),mode='constant',constant_values=0)
+
+
 #for i in range(5):# a modifier
     plt.plot(nodes,ajout0(vect_p[:,i]),label=f"vp={i}")
     plt.xlabel("Position x (m)")
@@ -162,7 +170,7 @@ def ajout0(V:list):
 
 t0 = 0
 t1 = 0.2
-t = np.linspace(t0, t1, 110)
+t = np.linspace(t0, t1, 300)
 
 u0 = solu_u
 v0 = n_nodes * [0]
@@ -206,32 +214,47 @@ plt.show()
 
 ##################### AVEC LA BASE MODALE
 
-omega=np.diag(val_p2**0.5)
-omega2=np.diag(val_p2) # matrice diag des carrés des fréquences propres au carré
-phi=vect_p # matrice dont les colonnes sont les modes propres (vecteurs propres)
+n_modes = 20 # nombre de modes propres à prendre en compte
+
+omega=np.diag(val_p2[:n_modes]**0.5)
+omega2=np.diag(val_p2[:n_modes]) # matrice diag des carrés des fréquences propres au carré
+phi=vect_p[:, :n_modes] # matrice rectangle dont les colonnes sont les modes propres (vecteurs propres)
+# On ne prend que les n_modes premiers modes
 
 q0= np.transpose(phi)@M_red@u0[1:-1]
 p0=np.zeros(np.shape(q0))
 Z0=np.concatenate([q0,p0]) 
 
 
+
 def rhs_modal(t,Y,xi=0):
-    n = len(Y)
+    """
+    Fonction qui retourne le vecteur dérivé de Y=[q,p] pour l'intégration temporelle
+    """
+    n = len(Y)//2
     q = Y[:n]
     p = Y[n:]
-    return np.concatenate([p, -2*xi*omega*p -omega2@q])
+    return np.concatenate([p,-2*xi*omega@p -omega2@q])
 
 
 sol = solve_ivp(rhs_modal, (t0, t1), Z0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
 
-sol_q= sol.y[:n_nodes,:]
-sol_Umoda= phi@sol_q
+sol_q= sol.y[:n_modes,:] # On prend que les q(t) et pas les p(t)
+sol_Umoda_red=phi@sol_q
+
+sol_Umoda=np.vstack([
+    np.zeros((1, len(sol.t))),
+    sol_Umoda_red,
+    np.zeros((1, len(sol.t)))
+])
 
 
-# Tracé de la corde à plusieurs instants
-for k in [0,1,2,3,4,5,6,7,8,9,10]:
-    plt.plot(nodes, sol_Umoda[:, k*10], label=f"t = {sol.t[k*10]:.3f} s")
 
+
+### Tracé de la corde à plusieurs instants
+
+for i in range(11):
+    plt.plot(nodes, sol_Umoda[:, i*10], label=f"t = {sol.t[i*10]:.3f} s")
 
 plt.xlabel("Position x (m)")
 plt.ylabel("Déplacement u(x,t) (m)")
@@ -240,6 +263,18 @@ plt.legend()
 plt.grid()
 plt.show()
 
+
+### Tracé du déplacement en un noeud en fonction du temps
+
+plt.plot(sol.t,sol_Umoda[:,int(x_bow/h)])
+plt.xlabel("Temps t (s)")
+plt.ylabel("Déplacement u(t) (m)")
+plt.title("Déplacement en un noeud en fonction du temps")
+plt.grid()
+plt.show()
+
+
+###
 
 #son : force transmise au chevalet T u'(0) ~ T u(noeud 1) - u(noeud 0) / h
 #F_bridge= T*(phi_full[ndof_per_node] @ res_mod.y[:N_MODES] ) / (L/n_elem)
