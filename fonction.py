@@ -17,6 +17,8 @@ def mesh_1d(L,n_elem):
     connect = np.column_stack((np.arange(0,n_nodes-1),np.arange(1,n_nodes)))
     return nodes,connect
 
+
+
 def string_elem_stiffness(h:float, T):
     """
     h : longueur
@@ -25,6 +27,8 @@ def string_elem_stiffness(h:float, T):
     Matrice de raideur élémentaire.
     """
     return T/h*np.array([[1,-1],[-1,1]])
+
+
 
 def string_element_mass(rho,S,h):
     """
@@ -36,6 +40,8 @@ def string_element_mass(rho,S,h):
     """
     return rho*S*h/6*np.array([[2,1],[1,2]])
 
+
+
 def assemblage_K(nodes,connect,T):
     """
     connect : liste des segments de la corde
@@ -44,7 +50,6 @@ def assemblage_K(nodes,connect,T):
     Return
     Assemblage de la matrice globale de raideur.
     """
-
     ndof_per_node = 1  
     n_nodes = len(nodes)                  # 1 ddl (u) par noeud pour la corde
     n_dof = n_nodes * ndof_per_node
@@ -58,6 +63,7 @@ def assemblage_K(nodes,connect,T):
             for b in range(len(dofs)):
                 K[dofs[a], dofs[b]] += Ke[a, b]
     return K
+
 
 
 def assemblage_M(nodes,connect,rho,S,h):
@@ -85,17 +91,23 @@ def assemblage_M(nodes,connect,rho,S,h):
                 M[dofs[a], dofs[b]] += Ke[a, b]
     return M
 
+
+
 def tronque(A):
     """
     Retourne M tronquée des premieres et dernieres lignes/colonnes
     """
     return A[1:-1,1:-1]
 
+
+
 def ajout0(V:list):
     """
     Retourne le vecteur V avec 2 dim en plus, un 0 avant et à la fin
     """
     return np.pad(V,(1, 1),mode='constant',constant_values=0)
+
+
 
 def ajout0matrice(M):
     """

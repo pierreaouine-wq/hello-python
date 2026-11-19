@@ -22,13 +22,13 @@ def mesh_1d(L,n_elem):
     connect = np.column_stack((np.arange(0,n_nodes-1),np.arange(1,n_nodes)))
     return nodes,connect
 
-L = 0.33        # longueur vibrante [m]
+L = 0.33        # Longueur vibrante [m]
 x_bow=0.03      #
-n_elem = 330   # nombre d'éléments
-T=50
-rho=3.1*10**(-3)
-S=1
-h=L/n_elem
+n_elem = 330    # Nombre d'éléments
+T=50            # Tension [N]
+rho=3.1*10**(-3) # Masse volumique [kg/m**3]
+S=1             # Section du fil [m**2]
+h=L/n_elem      # Longueur élementaire [m]
 nodes, connect = mesh_1d(L,n_elem)
 n_nodes=len(nodes)
 
@@ -238,12 +238,15 @@ def rhs_modal(t,Y,xi=0.001):
     return np.concatenate([p,-2*xi*omega@p -omega2@q])
 
 
+
+# Résolution numérique des équations différentielles régit par q(t)
+# rtol et atol définissent les tolérances d'erreur de l'intégration
+
 sol = solve_ivp(rhs_modal, (t0, t1), Z0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
-# Résolution numérique des équations différentielles régit par q(t) 
-# rtol et atol définissent les tolérances d'erreur de l'intégration.
-sol_q= sol.y[:n_modes,:] # On prend que les q(t): deplacements modaux et pas les p(t)
-sol_Umoda_red=phi@sol_q  # Reconstruction des déplacements de la corde à partir des modes propres.
-                         # Les déplacements des extrémités ne sont pas inclus.
+ 
+sol_q= sol.y[:n_modes,:]     # Prend que les q(t): deplacements modaux
+sol_Umoda_red=phi@sol_q      # Reconstruction des déplacements de la corde à partir des modes propres
+# Les déplacements des extrémités ne sont pas inclus
 
 sol_Umoda=np.vstack([
     np.zeros((1, len(sol.t))),
@@ -252,6 +255,7 @@ sol_Umoda=np.vstack([
 ])
 # ajout d'une premiere et d'une derniere ligne de 0 representant le fait que le premier et le dernier point sont fixes a tt instant t
 # np.vstack() empile verticalement les matrices et vecteurs.
+
 
 
 ### Tracé de la corde à plusieurs instants
@@ -267,6 +271,7 @@ plt.grid()
 plt.show()
 
 
+
 ### Tracé du déplacement en un noeud en fonction du temps
 
 plt.plot(sol.t,sol_Umoda[int(x_bow/h),:])
@@ -277,11 +282,13 @@ plt.grid()
 plt.show()
 
 
+
 ### Tracé de la Fchev en fonction du temps
 # Calcul de la force transversale au chevalet.
 # Celle-ci est liée à la pente de la corde à son extrémité :
 # F_chev = T * du/dx (x=0,t).
 # Ici T = 1, donc la force est numériquement égale à la pente.
+
 F_chev=(sol_Umoda[1,:]-sol_Umoda[0,:])/h
 plt.plot(sol.t, F_chev)
 plt.xlabel("Temps t (s)")
