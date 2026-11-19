@@ -215,6 +215,7 @@ plt.show()
 ##################### AVEC LA BASE MODALE
 
 n_modes = 20 # nombre de modes propres à prendre en compte
+# Pourquoi ne pas tous les prendre
 
 omega=np.diag(val_p2[:n_modes]**0.5)
 omega2=np.diag(val_p2[:n_modes]) # matrice diag des carrés des fréquences propres au carré
@@ -222,8 +223,8 @@ phi=vect_p[:, :n_modes] # matrice rectangle dont les colonnes sont les modes pro
 # On ne prend que les n_modes premiers modes
 
 q0= np.transpose(phi)@M_red@u0[1:-1]
-p0=np.zeros(np.shape(q0))
-Z0=np.concatenate([q0,p0]) 
+p0=np.zeros(np.shape(q0)) #on initialise q point 0
+Z0=np.concatenate([q0,p0]) # colonne de conditions initiales : déplacements modaux q0 et vitesses modales p0
 
 
 
@@ -238,17 +239,19 @@ def rhs_modal(t,Y,xi=0.001):
 
 
 sol = solve_ivp(rhs_modal, (t0, t1), Z0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
-
-sol_q= sol.y[:n_modes,:] # On prend que les q(t) et pas les p(t)
-sol_Umoda_red=phi@sol_q
+# Résolution numérique des équations différentielles régit par q(t) 
+# rtol et atol définissent les tolérances d'erreur de l'intégration.
+sol_q= sol.y[:n_modes,:] # On prend que les q(t): deplacements modaux et pas les p(t)
+sol_Umoda_red=phi@sol_q  # Reconstruction des déplacements de la corde à partir des modes propres.
+                         # Les déplacements des extrémités ne sont pas inclus.
 
 sol_Umoda=np.vstack([
     np.zeros((1, len(sol.t))),
     sol_Umoda_red,
     np.zeros((1, len(sol.t)))
 ])
-
-
+# ajout d'une premiere et d'une derniere ligne de 0 representant le fait que le premier et le dernier point sont fixes a tt instant t
+# np.vstack() empile verticalement les matrices et vecteurs.
 
 
 ### Tracé de la corde à plusieurs instants
@@ -275,6 +278,10 @@ plt.show()
 
 
 ### Tracé de la Fchev en fonction du temps
+# Calcul de la force transversale au chevalet.
+# Celle-ci est liée à la pente de la corde à son extrémité :
+# F_chev = T * du/dx (x=0,t).
+# Ici T = 1, donc la force est numériquement égale à la pente.
 F_chev=(sol_Umoda[1,:]-sol_Umoda[0,:])/h
 plt.plot(sol.t, F_chev)
 plt.xlabel("Temps t (s)")
