@@ -13,7 +13,7 @@ def mesh_1d(L,n_elem):
     n_elem : nombre d'éléments
     ------
     Returns
-    nodes : liste d'indice des noeuds
+    nodes : liste des positions des noeuds
     connect : liste des segments de la corde
 
     """

@@ -8,7 +8,7 @@ def mesh_1d(L,n_elem):
     n_elem : nombre d'éléments
     ------
     Returns
-    nodes : liste d'indice des noeuds
+    nodes : liste des positions des noeuds
     connect : liste des segments de la corde
 
     """
@@ -24,7 +24,7 @@ def string_elem_stiffness(h:float, T):
     h : longueur
     T : tension
     Return
-    Matrice de raideur élémentaire.
+    Matrice de raideur élémentaire
     """
     return T/h*np.array([[1,-1],[-1,1]])
 
@@ -36,7 +36,7 @@ def string_element_mass(rho,S,h):
     h:longueur
     S : surface
     Return
-    Matrice de masse élémentaire.
+    Matrice de masse élémentaire
     """
     return rho*S*h/6*np.array([[2,1],[1,2]])
 
@@ -47,8 +47,7 @@ def assemblage_K(nodes,connect,T):
     connect : liste des segments de la corde
     n_nodes : nombre de noeuds
     T : tension
-    Return
-    Assemblage de la matrice globale de raideur.
+    Assemblage de la matrice globale de raideur K
     """
     ndof_per_node = 1  
     n_nodes = len(nodes)                  # 1 ddl (u) par noeud pour la corde
@@ -75,7 +74,7 @@ def assemblage_M(nodes,connect,rho,S,h):
     h : longueur fil elementaire
 
     Return 
-    Assemblage de la matrice globale de masse.
+    Assemblage de la matrice globale de masse M
     """
     ndof_per_node = 1  
     n_nodes = len(nodes)                   # 1 ddl (u) par noeud pour la corde
