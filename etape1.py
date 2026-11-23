@@ -30,8 +30,7 @@ M=assemblage_M(nodes,connect,rho,S,h)
 K_red = tronque(K)
 M_red = tronque(M)
 
-solu_u = np.pad(np.linalg.solve(
-        tronque(assemblage_K(nodes, connect, T)),F),(1, 1),mode='constant',constant_values=0)
+solu_u = np.pad(np.linalg.solve(tronque(assemblage_K(nodes, connect, T)),F),(1, 1),mode='constant',constant_values=0)
 
 plt.plot(nodes, solu_u)
 plt.show()
@@ -42,7 +41,7 @@ plt.show()
 val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M)) 
 
 print("La taille de vect_p/phi:", np.shape(vect_p),"(n_nodes=)",n_nodes)
-#print(val_p2**(1/2))
+print(val_p2**(1/2))
 
 
 
