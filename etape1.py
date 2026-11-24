@@ -12,22 +12,21 @@ rho = 3.1e-3             # Masse volumique [kg/m]
 S = 1                    # Surface
 
 
-
 nodes, connect = mesh_1d(L, n_elem)
 
 n_nodes = len(nodes)
 h = L / n_elem
 
 
-
+# Asssemblage des matrices de raideur et de masse
 K=assemblage_K(nodes,connect,T)
 M=assemblage_M(nodes,connect,rho,S,h)
-
 
 
 # Elimination des degres de liberte bloques aux extremites
 K_red = tronque(K)
 M_red = tronque(M)
+
 
 
 # Détermination de la solution statique de la corde sous l'action de la force F
@@ -36,6 +35,7 @@ F[int(x_bow/h)] = 1   # Force du pincé aplliqué au noeud le plus proche de la 
 
 solu_u = np.pad(np.linalg.solve(tronque(assemblage_K(nodes, connect, T)),F),(1, 1),mode='constant',constant_values=0)
 
+# Tracé de la corde à l'instant initial sous la force F
 plt.plot(nodes, solu_u, "o-")
 plt.xlabel("Position x (m)")
 plt.ylabel("Déplacement u selon y (m)")
@@ -48,8 +48,8 @@ plt.show()
 # Ici on récupère les fréquences propres wn(vals propres) et les modes phi_n (vecteurs propres)
 val_p2 ,vect_p =linalg.eigh(tronque(K),tronque(M)) 
 
-print("La taille de vect_p/phi:", np.shape(vect_p),"(n_nodes=)",n_nodes)
-print(val_p2**(1/2))
+print("La taille de vect_p/phi est:", np.shape(vect_p),"(n_nodes=)",n_nodes)
+
 
 
 
@@ -63,16 +63,3 @@ for i in range(3):# a modifier
 plt.title("Modes propres de vibration de la corde")
 plt.show()
 
-
-
-# 
-T_var=np.arange(10,100,5)
-for i in range(len(T_var)):
-    Ki=assemblage_K(nodes,connect,T_var[i])
-    val_p2 ,vect_p =linalg.eigh(tronque(Ki),tronque(M))
-    plt.plot(T_var[i],val_p2[0]**(1/2),)
-    plt.xlabel("T")
-    plt.ylabel("f")
-    plt.grid()
-    plt.legend()
-plt.show()

@@ -1,5 +1,3 @@
-print("Test 0 : début du fichier")
-
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -12,8 +10,7 @@ from fonction import *
 import scipy.io.wavfile
 
 
-print("Début de l'étape 2")
-####################Données nécessaires a l'étape 2
+###########  Données nécessaires a l'étape 2 ############
 
 L = 0.33                 # Longueur vibrante [m]
 x_bow = 0.03             # Position de l'archet [m]
@@ -42,7 +39,7 @@ solu_u = np.pad(np.linalg.solve(tronque(assemblage_K(nodes, connect, T)),F),(1, 
 val_p2 ,vect_p =linalg.eigh(K_red,M_red) 
 
 
-##################################etape 2
+################################## Etape 2
 
 fs=44100         # Fréquence d'échantillonnage [Hz]
 t0 = 0           # Temps initial [s]
@@ -91,7 +88,7 @@ plt.show()
 '''
 
 
-##################### AVEC LA BASE MODALE
+##################### AVEC LA BASE MODALE #######################
 
 n_modes = 20 # nombre de modes propres à prendre en compte
 # Pourquoi ne pas tous les prendre
@@ -137,7 +134,7 @@ sol_Umoda=np.vstack([
 
 
 
-### Tracé de la corde à plusieurs instants
+######## Tracé de la corde à plusieurs instants #########
 
 for i in range(11):
     plt.plot(nodes, sol_Umoda[:, i*10], label=f"t = {sol.t[i*10]:.3f} s")
@@ -151,7 +148,7 @@ plt.show()
 
 
 
-### Tracé du déplacement en un noeud en fonction du temps
+####### Tracé du déplacement en un noeud en fonction du temps #######
 
 plt.plot(sol.t,sol_Umoda[int(x_bow/h),:])
 plt.xlabel("Temps t (s)")
@@ -162,7 +159,7 @@ plt.show()
 
 
 
-### Tracé de la Fchev en fonction du temps
+############ Tracé de la Fchev en fonction du temps ########
 # Calcul de la force transversale au chevalet.
 # Celle-ci est liée à la pente de la corde à son extrémité :
 # F_chev = T * du/dx (x=0,t).
@@ -178,7 +175,7 @@ plt.show()
 
 
 
-##### Création du son
+###### Création du son ######
 
 signal=(F_chev/np.max(np.abs(F_chev))*0.9*32767).astype(np.int16)
 
