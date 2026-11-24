@@ -1,16 +1,23 @@
+print("Test 0 : début du fichier")
+
 import numpy as np
+
 import matplotlib.pyplot as plt
+
 from scipy.integrate import solve_ivp
+
 import scipy.linalg as linalg
+
 from fonction import *
 import scipy.io.wavfile
 
 
+print("Début de l'étape 2")
 ####################Données nécessaires a l'étape 2
 
 L = 0.33                 # Longueur vibrante [m]
 x_bow = 0.03             # Position de l'archet [m]
-n_elem = 330             # Nombre d'elements
+n_elem = 330            # Nombre d'elements
 T = 50                   # Tension de la corde [N]
 rho = 3.1e-3             # Masse volumique [kg/m]
 S = 1                    # Surface
@@ -37,7 +44,6 @@ val_p2 ,vect_p =linalg.eigh(K_red,M_red)
 
 ##################################etape 2
 
-
 fs=44100         # Fréquence d'échantillonnage [Hz]
 t0 = 0           # Temps initial [s]
 t1 = 2           # Temps final [s]
@@ -50,7 +56,7 @@ u0 = solu_u
 v0 = n_nodes * [0]
 Y0 = np.concatenate([u0[1:-1], v0[1:-1]])
 
-
+'''
 
 # Calcul effectué une seule fois avant la simulation
 A = linalg.solve(M_red, K_red)
@@ -58,9 +64,9 @@ def rhs(t, Y):
     n = len(Y) // 2
     y1, y2 = Y[:n], Y[n:]
     return np.concatenate([y2, -A @ y1])
-
+print('avant solve.ivp')
 sol = solve_ivp(rhs, (t0, t1), Y0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
-
+print('apres solve.ivp')
 # Reconstruction des déplacements de tous les nœuds
 sol_U = np.vstack([
     np.zeros((1, len(sol.t))),
@@ -82,7 +88,7 @@ plt.legend()
 plt.grid()
 plt.show()
 
-
+'''
 
 
 ##################### AVEC LA BASE MODALE
@@ -116,7 +122,7 @@ def rhs_modal(t,Y,xi=0.001):
 # rtol et atol définissent les tolérances d'erreur de l'intégration
 
 sol = solve_ivp(rhs_modal, (t0, t1), Z0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
- 
+
 sol_q= sol.y[:n_modes,:]     # Prend que les q(t): deplacements modaux
 sol_Umoda_red=phi@sol_q      # Reconstruction des déplacements de la corde à partir des modes propres
 # Les déplacements des extrémités ne sont pas inclus
