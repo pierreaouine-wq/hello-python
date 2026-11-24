@@ -18,8 +18,7 @@ nodes, connect = mesh_1d(L, n_elem)
 n_nodes = len(nodes)
 h = L / n_elem
 
-F = np.zeros(n_nodes - 2)
-F[int(x_bow/h)] = 1
+
 
 K=assemblage_K(nodes,connect,T)
 M=assemblage_M(nodes,connect,rho,S,h)
@@ -30,9 +29,18 @@ M=assemblage_M(nodes,connect,rho,S,h)
 K_red = tronque(K)
 M_red = tronque(M)
 
+
+# Détermination de la solution statique de la corde sous l'action de la force F
+F = np.zeros(n_nodes - 2)
+F[int(x_bow/h)] = 1   # Force du pincé aplliqué au noeud le plus proche de la position de l'archet
+
 solu_u = np.pad(np.linalg.solve(tronque(assemblage_K(nodes, connect, T)),F),(1, 1),mode='constant',constant_values=0)
 
-plt.plot(nodes, solu_u)
+plt.plot(nodes, solu_u, "o-")
+plt.xlabel("Position x (m)")
+plt.ylabel("Déplacement u selon y (m)")
+plt.title("Solution statique de la corde à l'instant initial")
+plt.grid()
 plt.show()
 
 
