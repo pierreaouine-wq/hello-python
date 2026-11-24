@@ -51,11 +51,13 @@ v0 = n_nodes * [0]
 Y0 = np.concatenate([u0[1:-1], v0[1:-1]])
 
 
-"""
+
+# Calcul effectué une seule fois avant la simulation
+A = linalg.solve(M_red, K_red)
 def rhs(t, Y):
     n = len(Y) // 2
     y1, y2 = Y[:n], Y[n:]
-    return np.concatenate([y2, linalg.solve(M_red, -K_red @ y1)])
+    return np.concatenate([y2, -A @ y1])
 
 sol = solve_ivp(rhs, (t0, t1), Y0, method="RK45",t_eval=t, rtol=1e-3, atol=1e-9)
 
@@ -79,7 +81,7 @@ plt.title("Déformation de la corde à différents instants")
 plt.legend()
 plt.grid()
 plt.show()
-"""
+
 
 
 
