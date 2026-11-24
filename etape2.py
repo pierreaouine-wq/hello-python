@@ -38,10 +38,10 @@ val_p2 ,vect_p =linalg.eigh(K_red,M_red)
 ##################################etape 2
 
 
-fs=44100
-t0 = 0
-t1 = 4
-t = np.linspace(t0, t1, fs)
+fs=44100         # Fréquence d'échantillonnage [Hz]
+t0 = 0           # Temps initial [s]
+t1 = 2           # Temps final [s]
+t = t0 + np.arange(int((t1-t0)*fs)) / fs
 ################### Méthode d'intégration classique
 
 u0 = solu_u
