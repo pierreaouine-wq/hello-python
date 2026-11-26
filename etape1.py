@@ -22,7 +22,7 @@ h = L / n_elem
 K=assemblage_K(nodes,connect,T)
 M=assemblage_M(nodes,connect,rho,S,h)
 
-
+    
 # Elimination des degres de liberte bloques aux extremites
 K_red = tronque(K)
 M_red = tronque(M)

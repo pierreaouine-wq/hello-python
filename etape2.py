@@ -1,11 +1,7 @@
 import numpy as np
-
 import matplotlib.pyplot as plt
-
 from scipy.integrate import solve_ivp
-
 import scipy.linalg as linalg
-
 from fonction import *
 import scipy.io.wavfile
 
@@ -163,9 +159,9 @@ plt.show()
 # Calcul de la force transversale au chevalet.
 # Celle-ci est liée à la pente de la corde à son extrémité :
 # F_chev = T * du/dx (x=0,t).
-# Ici T = 1, donc la force est numériquement égale à la pente.
 
-F_chev=(sol_Umoda[1,:]-sol_Umoda[0,:])/h
+
+F_chev=T*(sol_Umoda[1,:]-sol_Umoda[0,:])/h
 plt.plot(sol.t, F_chev)
 plt.xlabel("Temps t (s)")
 plt.ylabel("Force chevalet (N)")
